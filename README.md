@@ -8,13 +8,15 @@ Package fixedwidth provides encoding and decoding for fixed-width formatted Data
 
 ### Struct Tags
 
-The struct tag schema schema used by fixedwidth is: `fixed:"{startPos},{endPos},[{alignment},[{padChar}]]"`<sup id="a1">[1](#f1)</sup>.
+The struct tag schema schema used by fixedwidth is: `fixed:"{startPos},{endPos},[{alignment},[{padChar},[{precision}]]]"`<sup id="a1">[1](#f1)</sup>.
 
 The `startPos` and `endPos` arguments control the position within a line. `startPos` and `endPos` must both be positive integers greater than 0. Positions start at 1. The interval is inclusive. 
 
 The `alignment` argument controls the alignment of the value within it's interval. The valid options are `default`<sup id="a2">[2](#f2)</sup>, `right`, and `left`. The `alignment` is optional and can be omitted.
 
 The `padChar` argument controls the character that will be used to pad any empty characters in the interval after writing the value. The default padding character is a space. The `padChar` is optional and can be omitted.
+
+The `precision` argument controls the nmuber of decimal places used for floating point output. The default precision is 2. The `precision` is optional and can be omitted.
 
 Fields without tags are ignored.
 
