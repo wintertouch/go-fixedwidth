@@ -11,27 +11,25 @@ import (
 // position, format, and padding character.
 //
 // If the tag is not valid, ok will be false.
-func parseTag(tag string) (startPos, endPos int, format format, ok bool) {
+func parseTag(tag string) (startPos, endPos, precision int, format format, ok bool) {
 	parts := strings.Split(tag, ",")
-	if len(parts) < 2 || len(parts) > 4 {
-		return 0, 0, defaultFormat, false
+	if len(parts) < 2 || len(parts) > 5 {
+		return 0, 0, 0, defaultFormat, false
 	}
 
 	var err error
 	if startPos, err = strconv.Atoi(parts[0]); err != nil {
-		return 0, 0, defaultFormat, false
-
+		return 0, 0, 0, defaultFormat, false
 	}
 	if endPos, err = strconv.Atoi(parts[1]); err != nil {
-		return 0, 0, defaultFormat, false
-
+		return 0, 0, 0, defaultFormat, false
 	}
 	if startPos > endPos || (startPos == 0 && endPos == 0) {
-		return 0, 0, defaultFormat, false
-
+		return 0, 0, 0, defaultFormat, false
 	}
 
 	format = defaultFormat
+	precision = 2
 
 	if len(parts) >= 3 {
 		alignment := alignment(parts[2])
@@ -52,7 +50,13 @@ func parseTag(tag string) (startPos, endPos int, format format, ok bool) {
 		}
 	}
 
-	return startPos, endPos, format, true
+	if len(parts) >= 5 {
+		if precision, err = strconv.Atoi(parts[4]); err != nil {
+			return 0, 0, 0, defaultFormat, false
+		}
+	}
+
+	return startPos, endPos, precision, format, true
 }
 
 type structSpec struct {
@@ -88,7 +92,7 @@ func buildStructSpec(t reflect.Type) structSpec {
 	for i := 0; i < t.NumField(); i++ {
 		f := t.Field(i)
 
-		startPos, endPos, format, ok := parseTag(f.Tag.Get("fixed"))
+		startPos, endPos, precision, format, ok := parseTag(f.Tag.Get("fixed"))
 		if !ok {
 			continue
 		}
@@ -102,8 +106,8 @@ func buildStructSpec(t reflect.Type) structSpec {
 			ss.ll = ss.fieldSpecs[i].endPos
 		}
 
-		ss.fieldSpecs[i].encoder = newValueEncoder(f.Type, false)
-		ss.fieldSpecs[i].codepointEncoder = newValueEncoder(f.Type, true)
+		ss.fieldSpecs[i].encoder = newValueEncoder(f.Type, false, precision)
+		ss.fieldSpecs[i].codepointEncoder = newValueEncoder(f.Type, true, precision)
 		ss.fieldSpecs[i].setter = newValueSetter(f.Type)
 	}
 	return ss

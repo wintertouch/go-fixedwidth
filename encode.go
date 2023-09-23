@@ -153,7 +153,15 @@ func (e *Encoder) writeLine(v reflect.Value) (err error) {
 
 type valueEncoder func(v reflect.Value) (rawValue, error)
 
-func newValueEncoder(t reflect.Type, useCodepointIndices bool) valueEncoder {
+func newValueEncoder(t reflect.Type, useCodepointIndices bool, args ...int) valueEncoder {
+	fpPrecision := 2
+	if len(args) > 0 {
+		fpPrecision = args[0]
+	}
+	return newValueEncoderInternal(t, useCodepointIndices, fpPrecision)
+}
+
+func newValueEncoderInternal(t reflect.Type, useCodepointIndices bool, fpPrecision int) valueEncoder {
 	if t == nil {
 		return nilEncoder
 	}
@@ -171,9 +179,9 @@ func newValueEncoder(t reflect.Type, useCodepointIndices bool) valueEncoder {
 	case reflect.Int, reflect.Int64, reflect.Int32, reflect.Int16, reflect.Int8:
 		return intEncoder
 	case reflect.Float64:
-		return floatEncoder(2, 64)
+		return floatEncoder(fpPrecision, 64)
 	case reflect.Float32:
-		return floatEncoder(2, 32)
+		return floatEncoder(fpPrecision, 32)
 	case reflect.Uint, reflect.Uint64, reflect.Uint32, reflect.Uint16, reflect.Uint8:
 		return uintEncoder
 	case reflect.Bool:
