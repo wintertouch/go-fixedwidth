@@ -61,6 +61,10 @@ func TestMarshal(t *testing.T) {
 	type H2 struct {
 		F1 bool `fixed:"1,1"`
 	}
+	type H3 struct {
+		F1 float64 `fixed:"1,14,left,0,5"`
+		F2 float64 `fixed:"16,29,right,#,5"`
+	}
 	tagHelper := struct {
 		Valid       string `fixed:"1,5"`
 		NoTags      string
@@ -82,6 +86,7 @@ func TestMarshal(t *testing.T) {
 		{"empty slice", []H{}, nil, false},
 		{"pointer", &H{"foo", 1}, []byte("foo  1    "), false},
 		{"nil", nil, nil, false},
+		{"fp precision", H3{123.123456, 987.654321}, []byte("123.1234600000 #####987.65432"), false},
 		{"invalid type", invtype, nil, true},
 		{"invalid type in struct", H{"foo", invtype}, nil, true},
 		{"marshal error", EncodableString{"", marshalError}, nil, true},
